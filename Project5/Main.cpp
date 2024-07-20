@@ -81,26 +81,22 @@ VOID Cleanup()
 // #8. 화면 그리기
 VOID Render()
 {
-	/// 후면버퍼를 파란색(0,0,255)으로 지운다.
-	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0); // 바탕의 색
+	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0); // 후면버퍼를 검정색(0, 0, 0)으로 지운다.
 
-	/// 렌더링 시작
+	// 렌더링 시작
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
 	{
-		/// 정점버퍼의 삼각형을 그린다.
-		/// 1. 정점정보가 담겨있는 정점버퍼를 출력 스트림으로 할당한다.
-		g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
-		/// 2. D3D에게 정점쉐이더 정보를 지정한다. 대부분의 경우에는 FVF만 지정한다.
-		g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
-		/// 3. 기하 정보를 출력하기 위한 DrawPrimitive()함수 호출
-		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
+		// 정점버퍼의 삼각형을 그린다.
+		g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX)); // 1. 정점정보가 담겨있는 정점버퍼를 출력 스트림으로 할당한다.
+		g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX); // 2. D3D에게 정점쉐이더 정보를 지정한다. 대부분의 경우에는 FVF만 지정한다.
+		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1); // 3. 기하 정보를 출력하기 위한 DrawPrimitive()함수 호출
 		g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-		/// 렌더링 종료
+		// 렌더링 종료
 		g_pd3dDevice->EndScene();
 	}
 
-	/// 후면버퍼를 보이는 화면으로!
+	// 후면버퍼를 보이는 화면으로!
 	g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 }
 
@@ -117,16 +113,10 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-
-
-
-/**-----------------------------------------------------------------------------
-* 프로그램 시작점
-*------------------------------------------------------------------------------
-*/
+// 프로그램 시작점
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
-	/// 윈도우 클래스 등록
+	// 윈도우 클래스 등록
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
 		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
 		"D3D Tutorial", NULL };
@@ -137,10 +127,10 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 		WS_OVERLAPPEDWINDOW, 100, 100, 300, 300,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
-	/// Direct3D 초기화
+	// Direct3D 초기화
 	if (SUCCEEDED(InitD3D(hWnd)))
 	{
-		/// 정점버퍼 초기화
+		// 정점버퍼 초기화
 		if (SUCCEEDED(InitVB()))
 		{
 			// #5. 윈도우 출력2. 윈도우의 화면에 보이도록 한다.
@@ -157,8 +147,8 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 			{
 				if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) // 메시지큐에 메시지가 있으면 메시지 처리
 				{
-					TranslateMessage(&msg);
-					DispatchMessage(&msg);
+					TranslateMessage(&msg); // 키보드 입력 메시지를 문자 메시지로 변환한다.
+					DispatchMessage(&msg); // 메시지를 해당 윈도우 프로시저로 전달하여 처리한다.
 				}
 				else // #7. 처리할 메시지가 없으면 Render()함수 호출
 					Render();
@@ -166,7 +156,6 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 		}
 	}
 
-	/// 등록된 클래스 소거
-	UnregisterClass("D3D Tutorial", wc.hInstance);
+	UnregisterClass("D3D Tutorial", wc.hInstance); // 등록된 클래스 소거
 	return 0;
 }
