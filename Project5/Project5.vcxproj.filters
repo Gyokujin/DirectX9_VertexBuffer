@@ -20,6 +20,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="FrameWork.txt" />
     <Text Include="Essence.txt" />
   </ItemGroup>
 </Project>

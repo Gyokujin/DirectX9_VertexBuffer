@@ -1,0 +1,118 @@
+#1. 윈도우 생성 : WinAPI를 사용하여 윈도우를 생성
+
+HWND hWnd = CreateWindow("D3D Tutorial", "D3D Tutorial 02: Vertices", // lpClassName, lpWindowName
+			WS_OVERLAPPEDWINDOW, 100, 100, 300, 300,				  // dwStyle, x, y, nWidth, nHeight
+			GetDesktopWindow(), NULL, wc.hInstance, NULL);			  // hWndParent, hMenu, hInstance, lpParam
+
+
+#2. Direct3D 초기화
+
+ZeroMemory : 지정된 주소(dest)에 길이(length) 만큼 0으로 채워준다.
+
+SwapEffect : 화면에 그래픽을 출력하는 동안 이들 버퍼 간의 교환 방식을 정의한다.
+- D3DSWAPEFFECT_DISCARD : 렌더링이 끝나면 백 버퍼의 내용을 버리고, 새로운 프레임을 렌더링 하면 새롭게 백 버퍼를 덮어씌운다. 매 프레임마다 전부 지우고 새로 그린다고 생각하면 된다.
+- D3DSWAPEFFECT_FLIP : 백 버퍼와 프론트 버퍼가 서로 자리를 바꾸는 방식. 성능은 좋지만 메모리 사용량이 증가할 수 있다.
+- D3DSWAPEFFECT_COPY : 백 버퍼의 내용을 프론트 버퍼로 복사한다. 백 버퍼의 내용을 유지해야 할 때 사용한다.
+- D3DSWAPEFFECT_OVERLAY: 오버레이 서피스를 사용한다.
+
+BackBufferFormat : 백 버퍼의 픽셀 형식을 정의한다. 백 버퍼의 픽셀 형식은 렌더링되는 이미지의 색상, 정확도, 성능 등에 영향을 미친다.
+- UNKNOWN : 백 버퍼 형식을 명시적으로 지정하지 않고 Direct3D가 자동으로 현재 디스플레이 모드에 맞는 적절한 백 버퍼 형식을 선택한다.
+
+CreateDevice : Direct3D의 렌더링을 수행할 IDirect3DDevice9 객체를 생성. 이 디바이스는 GPU와 상호 작용하며, 그래픽 렌더링, 자원 관리, 상태 설정 등의 작업을 수행
+CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &g_pd3dDevice)
+- D3DADAPTER_DEFAULT : 기본 그래픽 어댑터를 사용한다.
+- D3DDEVTYPE_HAL : 하드웨어 가속 디바이스를 사용한다.
+- hWnd : 렌더링할 대상 창의 핸들. 렌더링 출력을 할 창을 지정한다.
+- D3DCREATE_SOFTWARE_VERTEXPROCESSING : 정점 처리를 소프트웨어에서 수행한다.
+- &d3dpp : 구조체의 포인터
+- &g_pd3dDevice : D3D디바이스의 포인터
+
+
+#3. 정점 버퍼 생성
+
+- 정점 버퍼(Vertex Buffer) : 정점을 보관하기 위한 D3D용 객체인데, 사용자가 FVF를 사용하여 자유롭게 형식을 정의할 수 있다. 기본적으로 정점정보를 갖고있는 메모리블럭이며 정점버퍼를 생성한 다음에는 반드시 Lock()과 Unlock()으로 포인터를 얻어내서 정점정보를 정점버퍼에 써넣어야 한다.
+							D3D는 인덱스버퍼도 사용가능하다. 정점버퍼나 인덱스버퍼는 기본 시스템 메모리외에 디바이스 메모리(비디오카드 메모리)에 생성될수 있는데, 대부분의 비디오카드에서는 이렇게 할경우 엄청난 속도의 향상을 얻을 수 있다.
+- FVF(Flexible Vertex Format) : 유연한 정점 포맷. D3D에서 정해져있는 vertex의 format 중 자신이 제작하는 프로그램에 알맞은 것들을 모아서 새로운 format을 정의
+
+- CreateVertexBuffer : GPU에서 사용할 정점 버퍼를 생성.
+
+CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX), 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &g_pVB, NULL)
+- 3 * sizeof(CUSTOMVERTEX) : 정점 버퍼의 크기를 바이트 단위로 지정한다. 각 정점의 크기는 구조체의 크기로 정하며 sizeof로 해당 구조체의 크기를 구하고 (구조체의 크기 * 필요한 정점의 수)를 바이트 단위로 변환하여 매개변수로 사용한다.
+- D3DFVF_CUSTOMVERTEX : 버퍼가 저장될 메모리 풀을 지정하며 디폴트는 Direct3D가 최적의 메모리 위치를 자동으로 선택하게 한다.
+- &g_pVB : IDirect3DVertexBuffer9의 포인터. 생성된 정점 버퍼를 가리킨다.
+- Lock : 버퍼에 대한 메모리에 접근한다. 그리고 그 버퍼 영역이 잠겨 GPU의 접근을 막게 된다.
+
+
+#4. UpdateWindow : 윈도우의 클라이언트 영역을 그리기 위해 Paint 메시지를 보낸다.
+
+
+#5. ShowWindow : 윈도우의 표시 상태를 설정하는 WinAPI 함수. 윈도우를 화면에 보이게 하거나 숨기거나, 최소화 또는 최대화 상태로 설정 가능하다.
+
+
+#6. 메시지 루프 : API 사용자의 입력 및 시스템 메시지를 처리하고, 메시지가 없다면 다른 작업(Render)을 수행한다. 메시지 루프는 WM_QUIT 메시지가 발생할 때까지 실행된다.
+- WM_QUIT : 윈도우 API에서 프로그램 종료를 요청할 때 사용되는 시스템 메시지
+
+if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
+{
+	TranslateMessage(&msg); // 키보드 입력 메시지(WM_KEYDOWN, WM_KEYUP 등)를 문자 메시지(WM_CHAR)로 변환한다.
+	DispatchMessage(&msg);	// 메시지를 윈도우 프로시저로 전달하고 메시지를 받아서 적절하게 처리한다.
+}
+
+PeekMessage : 메시지 큐에서 메시지를 확인하고, 있으면 가져와서 처리한다.
+UnregisterClass : 이전에 RegisterClass를 사용하여 등록한 윈도우 클래스를 시스템에서 해제한다.
+
+
+#7. Empty : 처리할 메시지가 없으면 Render()함수 호출
+
+
+*8. 화면 그리기(Renderer)
+
+g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0) // 후면 버퍼를 특정 색깔로 지운다. 화면을 지우고 배경색을 설정한다(화면 초기화)
+
+Clear(
+	DWORD Count,			// 지울 영역의 수(전체 화면을 지울 때는 0으로 설정한다)
+	const D3DRECT *pRects,	// 지울 영역의 배열(전체 화면을 지울 때는 NULL로 설정한다)
+	DWORD Flags,			// 지울 버퍼를 지정하는 플래그(D3DCLEAR_TARGET은 색 버퍼(렌더 타겟)를 지운다)
+	D3DCOLOR Color,			// 후면 버퍼에 설정할 색깔(D3DCOLOR_XRGB를 사용하면 RGB 값을 지정한다)
+	float z,				// 깊이 버퍼(보통 1.0f로 설정하여 최대 깊이 값을 사용한다)
+	stencil					//  스텐실 버퍼를 지울 때 사용할 값(보통 0으로 설정한다)
+);
+
+SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX)) // 디바이스에 정점 데이터(Vertex Data)를 제공한다. 렌더링 파이프라인이 이 정점 데이터를 사용할 수 있게 한다.
+
+SetStreamSource(
+  UINT StreamNumber,					// 스트림의 번호(일반적으로 0을 사용하여 첫 번째 스트림을 설정)
+  IDirect3DVertexBuffer9* pStreamData,	// 정점 데이터를 포함하는 정점 버퍼의 포인터(IDirect3DVertexBuffer9 인터페이스를 가리킨다)
+  UINT OffsetInBytes,					// 스트림의 시작 지점에서 정점 데이터까지의 오프셋을 바이트 단위로 지정한다. (일반적으로 0으로 설정하여 정점 버퍼의 시작 지점에서부터 데이터를 읽는다)
+  UINT Stride							// 각 정점의 크기를 바이트 단위로 지정. 올바게 정점 데이터를 해석하기 위해 필요하다(sizeof(CUSTOMVERTEX)를 사용하여 구조체의 크기를 전달한다)
+);
+
+SetFVF(D3DFVF_CUSTOMVERTEX) // 디바이스에 사용될 정점 형식을 설정한다. FVF는 정점 데이터의 형식을 정의하는데 사용되며 이것을 설정하여 Direct3D가 정점 데이터를 올바르게 해석하고 처리할 수 있게 한다.
+
+DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1) // Direct3D에 기본 도형을 렌더링하는 함수. 정점 데이터를 사용하여 화면에 도형을 그린다.
+
+DrawPrimitive(
+  D3DPRIMITIVETYPE PrimitiveType,	// 렌더링할 기본 도형의 유형(D3DPT_TRIANGLELIST는 삼각형 리스트를 의미한다)
+  UINT StartVertex,					// 정점 버퍼에서 첫 번째 정점의 인덱스(0은 첫 번째 정점부터 시작된다)
+  UINT PrimitiveCount				// 렌더링할 기본 도형의 개수
+);
+
+SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE) // Direct3D 디바이스의 렌더 상태를 설정한다. 다양한 렌더링 옵션을 제어할 수 있는 기능을 제공한다.
+
+SetRenderState(
+  D3DRENDERSTATETYPE State, // 설정할 렌더 상태(D3DRS_CULLMODE는 컬링 모드를 설정하는 상태)
+  DWORD Value				// 지정된 렌더 상태(D3DCULL_NONE는 컬링을 비활성화한다)
+);
+
+Present(NULL, NULL, NULL, NULL); // Direct3D에서 렌더링된 이미지를 화면에 표시한다. 후면 버퍼(Back Buffer)의 내용을 프론트 버퍼(Front Buffer)로 스왑하여 화면에 렌더링 한다.
+
+Present(
+  const RECT* pSourceRect,		// 후면 버퍼의 일부를 복사할 영역(NULL은 전체 후면 버퍼)
+  const RECT* pDestRect,		// 프론트 버퍼의 일부에 렌더링 결과를 복사할 영역(NULL은 전체 프론트 버퍼)
+  HWND hDestWindowOverride,		// 렌더링 결과를 표시할 윈도우의 핸들(NULL은 IDirect3DDevice9 객체가 생성될 때 지정한 위도우에 결과를 표시)
+  const RGNDATA* pDirtyRegion	// 렌더링된 부분 중에서 실제로 변경될 영역(NULL은 전체 영역)
+);
+
+
+#9. 초기화 객체들 소거
+- 사용이 끝난 리소스를 해제하여 메모리 누수 문제를 방지한다.

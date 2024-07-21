@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Essence.txt" />
+    <Text Include="FrameWork.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
